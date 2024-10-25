@@ -3,17 +3,22 @@ from random import randrange
 from deck import *
 
 class Game():
-    def __init__(self, human_player, bots = 0):
+    def __init__(self, bots = 0):
         self.deck = []
         self.dealer = None
-        self.human_player = human_player
+        self.human_player = None
         self.number_of_bots = bots
         self.bot_players = []
         self.minimum_bet = 5
         self.seats = [[]] * 5
+        self._create_human_player()
         self._create_bot_players()
         self._create_dealer()
         self._assign_seating()
+    
+    def _create_human_player(self):
+        player = Player()
+        self.human_player = player
         
     def _create_bot_players(self):
         if 0 < self.number_of_bots < 5:

@@ -12,9 +12,8 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(player.hand, [])
     
     def test_new_game(self):
-        player = Player()
-        game = Game(player)
-        self.assertEqual(game.human_player, player)
+        game = Game()
+        self.assertNotEqual(game.human_player, None)
         self.assertEqual(game.bot_players, [])
         self.assertEqual(game.deck, [])
         self.assertNotEqual(game.dealer, None)
@@ -22,9 +21,7 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(len(game.seats), 5)
     
     def test_new_game_seats(self):
-        player = Player()
-        game = Game(player, 4)
-        self.assertEqual(game.seats[player.seat_number], player)
+        game = Game(4)
         self.assertNotEqual(game.seats, [[]]*5)
         seated = {}
         seated[game.seats[0]] = True
@@ -33,22 +30,21 @@ class TestTextNode(unittest.TestCase):
         seated[game.seats[3]] = True
         seated[game.seats[4]] = True
         self.assertEqual(len(seated), 5)
+        player_seat_number = game.human_player.seat_number
+        self.assertEqual(game.seats[player_seat_number], game.human_player)
         
     def test_bot_players(self):
-        player = Player()
-        game = Game(player, 2)
+        game = Game(2)
         self.assertEqual(len(game.bot_players), 2)
         self.assertNotEqual(game.bot_players[0], game.bot_players[1])
     
     def test_bot_players_invalid_values(self):
-        player = Player()
-        game = Game(player, -5)
+        game = Game(-5)
         self.assertEqual(len(game.bot_players), 0)
         
     def test_shuff_deck(self):
-        player = Player()
         new_deck = Deck()
-        game = Game(player)
+        game = Game()
         game.shuffle_deck()
         self.assertNotEqual(game.deck[0], new_deck.game_deck[0])
         self.assertNotEqual(game.deck[1], new_deck.game_deck[1])
