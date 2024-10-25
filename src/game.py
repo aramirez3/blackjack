@@ -3,30 +3,27 @@ from random import randrange
 from deck import *
 
 class Game():
-    def __init__(self, bots = 0):
+    def __init__(self):
         self.deck = []
         self.dealer = None
         self.human_player = None
-        self.number_of_bots = bots
+        self.number_of_bots = 0
         self.bot_players = []
         self.minimum_bet = 5
         self.seats = [[]] * 5
-        self._create_human_player()
-        self._create_bot_players()
-        self._create_dealer()
-        self._assign_seating()
     
     def _create_human_player(self):
         player = Player()
         self.human_player = player
         
-    def _create_bot_players(self):
-        if 0 < self.number_of_bots < 5:
-            bots = []
-            for _ in range(self.number_of_bots):
+    def _create_bot_players(self, bots):
+        if 0 < bots < 5:
+            self.number_of_bots = bots
+            bots_list = []
+            for _ in range(bots):
                 player = Player()
-                bots.append(player)
-            self.bot_players.extend(bots)
+                bots_list.append(player)
+            self.bot_players.extend(bots_list)
         
     def _create_dealer(self):
         dealer = Player()
@@ -42,7 +39,11 @@ class Game():
                 self.seats[seat_number] = self.bot_players[bots_remaining - 1]
                 bots_remaining -= 1
         
-    def start_new_game(self):
+    def start_new_game(self, bots = 0):
+        self._create_human_player()
+        self._create_dealer()
+        self._create_bot_players(bots)
+        self._assign_seating()
         self.shuffle_deck()
     
     def shuffle_deck(self):
