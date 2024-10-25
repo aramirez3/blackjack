@@ -1,12 +1,17 @@
 from enum import Enum
 
-class Suits(Enum):
+class Enum_Helper(Enum):
+    def __str__(self):
+        return self.value
+
+class Suits(Enum_Helper):
     CLUBS = "Clubs"
     DIAMONDS = "Diamonds"
     HEARTS = "Hearts"
     SPADES = "Spades"
     
-class Ranks(Enum):
+    
+class Ranks(Enum_Helper):
     ACE = "Ace"
     TWO = "2"
     THREE = "3"

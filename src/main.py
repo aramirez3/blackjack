@@ -1,7 +1,7 @@
-from deck import *
+from game import *
 def main():
-    print("Hello world")
-    deck = Deck()
-    print(repr(deck))
-    
+    player = Player()
+    game = Game(player)
+    game.start_new_game()    
+    print(game.deck[0].name)
 main()

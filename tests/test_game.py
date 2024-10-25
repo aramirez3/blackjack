@@ -20,6 +20,19 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(game.dealer, None)
         self.assertEqual(game.minimum_bet, 5)
         self.assertEqual(len(game.seats), 5)
+    
+    def test_new_game_seats(self):
+        player = Player()
+        game = Game(player, 4)
+        self.assertEqual(game.seats[player.seat_number], player)
+        self.assertNotEqual(game.seats, [[]]*5)
+        seated = {}
+        seated[game.seats[0]] = True
+        seated[game.seats[1]] = True
+        seated[game.seats[2]] = True
+        seated[game.seats[3]] = True
+        seated[game.seats[4]] = True
+        self.assertEqual(len(seated), 5)
         
     def test_bot_players(self):
         player = Player()

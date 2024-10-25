@@ -34,9 +34,8 @@ class Game():
         while bots_remaining:
             seat_number = randrange(0, 5)
             if seat_number != reserved_seat and self.seats[seat_number] == []:
-                self.seats[seat_number] = self.bot_players.pop()
+                self.seats[seat_number] = self.bot_players[bots_remaining - 1]
                 bots_remaining -= 1
-        print(self.seats)
         
     def start_new_game(self):
         self.shuffle_deck()
