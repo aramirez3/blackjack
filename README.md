@@ -19,3 +19,5 @@ A text-based blackjack game! You can 1v1 the house or add 2-4 "bot" players to t
 ### Bots
 - The bots will always play [basic strategy](https://en.wikipedia.org/wiki/Blackjack#Basic_strategy)
 
+### Player
+- Player sits at Seat #1 if a `seat_number` pref is not given. Meaning they will be the first to play each round.

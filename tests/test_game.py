@@ -16,9 +16,10 @@ class TestTextNode(unittest.TestCase):
         game = Game(player)
         self.assertEqual(game.human_player, player)
         self.assertEqual(game.bot_players, [])
-        self.assertEqual(game.deck, None)
-        self.assertEqual(game.is_shuffled, False)
+        self.assertEqual(game.deck, [])
+        self.assertNotEqual(game.dealer, None)
         self.assertEqual(game.minimum_bet, 5)
+        self.assertEqual(len(game.seats), 5)
         
     def test_bot_players(self):
         player = Player()
@@ -30,6 +31,19 @@ class TestTextNode(unittest.TestCase):
         player = Player()
         game = Game(player, -5)
         self.assertEqual(len(game.bot_players), 0)
+        
+    def test_shuff_deck(self):
+        player = Player()
+        new_deck = Deck()
+        game = Game(player)
+        game.shuffle_deck()
+        self.assertNotEqual(game.deck[0], new_deck.game_deck[0])
+        self.assertNotEqual(game.deck[1], new_deck.game_deck[1])
+        self.assertNotEqual(game.deck[2], new_deck.game_deck[2])
+        self.assertNotEqual(game.deck[3], new_deck.game_deck[3])
+        self.assertNotEqual(game.deck[4], new_deck.game_deck[4])
+    
+    
         
 if __name__ == "__main__":
     unittest.main()
