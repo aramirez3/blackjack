@@ -25,3 +25,9 @@ class Ranks(Enum_Helper):
     JACK = "Jack"
     QUEEN = "Queen"
     KING = "King"
+    
+class PlayerMoves(Enum_Helper):
+    HIT = "h = hit"
+    STAY = "s = stay"
+    DOUBLE_DOWN = "d = double down"
+    SPLIT = "s = split"

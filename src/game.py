@@ -1,6 +1,7 @@
 from random import randrange
 
 from deck import *
+from constants import *
 
 class Game():
     def __init__(self):
@@ -25,12 +26,12 @@ class Game():
             bots_list = []
             for i in range(bots):
                 player = Player()
-                player.name = f"Bot {i}"
+                player.name = f"Bot {i + 1}"
                 bots_list.append(player)
             self.bot_players.extend(bots_list)
         
     def _create_dealer(self):
-        dealer = Player()
+        dealer = Dealer()
         dealer.name = "Dealer"
         self.dealer = dealer
         
@@ -54,6 +55,7 @@ class Game():
         self.is_active = True
     
     def shuffle_deck(self):
+        print("----------------\nShuffling the deck")
         deck = Deck()
         for _ in range(0, len(deck.game_deck)):
             cards_remaining = len(deck.game_deck)
@@ -61,6 +63,7 @@ class Game():
             card = deck.game_deck[card_index]
             self.deck.append(card)
             del deck.game_deck[card_index]
+        print("Deck is shuffled\n----------------")
             
     def game_start_greeting(self):
         print(f"current player: {self.human_player}")
@@ -75,7 +78,7 @@ class Game():
             try:
                 seat_number = int(input("Pick a seat number (1-5): "))
                 if seat_number > 0 and seat_number <=5:
-                    self.human_player.seat_number = seat_number
+                    self.human_player.seat_number = seat_number - 1
                     break
             except ValueError:
                 print("Please select a seat number from 1-5")
@@ -109,35 +112,38 @@ class Game():
         while True:
             try:
                 current_bet = float(input(f"Place your bet (min: {self.minimum_bet}): "))
-                if current_bet > self.minimum_bet:
+                if current_bet >= self.minimum_bet:
                     break
                 else:
                     print(f"Minimum bet is {self.minimum_bet}")
             except ValueError:
                 print(f"Invalid input. Minimum bet is {self.minimum_bet}")
-        print(f"Your bet is {current_bet} ({self.human_player.hand_value} remaining)")
         self.human_player.update_money(current_bet)
+        print(f"Your bet is {current_bet} ({self.human_player.cash_money} remaining)")
         for player in self.bot_players:
             if player.is_active:
                 player.update_money(self.minimum_bet)
+        print("All bets have been placed")
     
-    def deal_cards(self):
+    def deal_cards(self, quantity = 1):
         print("Dealing cards...")
-        for _ in range(0, 2):
+        for _ in range(0, quantity):
             for player in self.seats:
                 if player != []:
                     player.activate(self)
                     if player.is_active:
-                        player.update_hand(self.deck.pop())
-                        player.update_hand_description()
-            self.dealer.update_hand(self.deck.pop())
+                        player.update_hand(self.deck.pop(), self)
+            card = self.deck.pop()
+            self.dealer.update_hand(card, self)
             print(f"Cards remaining in deck: {len(self.deck)}")
      
     def print_player_hands(self):
+        print(f"++Dealer's full hand = {self.dealer.hand_description}")
         if len(self.dealer.hand) > 2:
-            print(f"++Dealer shows {', '.join(map(lambda x: x.value, self.dealer.hand[1:]))} ({self.dealer.hand_value - self.dealer.hand[0].value})")
+            print(f"++Dealer shows {self.dealer.visible_hand_description}")
         else:
-            print(f"++Dealer shows {self.dealer.hand[1].value} ({self.dealer.hand_value})")
+            print(f"++Dealer shows {self.dealer.visible_hand_description}")
+        print(f"    --dealer visible value = {self.dealer.visible_value}")
         
         for player in self.seats:
             if player != [] and player != self.human_player:
@@ -145,17 +151,34 @@ class Game():
         
         print(f"Your hand: {self.human_player.hand_description} ({self.human_player.hand_value})")
 
-    def update_game_status(self):
+    def update_game_status(self, first_round=True):
         for player in self.seats:
             if player != []:
-                if player.hand_value < self.minimum_bet:
+                if player.cash_money < self.minimum_bet:
                     if player == self.human_player:
                         print(f"Game over! The house ALWAYS wins!")
                         self.is_active = False
                         return
                     print(f"{player.name} has been eliminated!")
                     player.deactivate()
-        pass
+    
+    def decide_next_round(self):
+        if self.dealer.hand_value < 17:
+            self.players_decide_next_move()
+            return
+        else:
+            self.dealer_collects_or_pays_out()
+    
+    def dealer_collects_or_pays_out(self):
+        print("dealer_collects_or_pays_out")
+            
+    def players_decide_next_move(self):
+            for player in self.seats:
+                if player != [] and player.is_active:
+                    if player == self.human_player:
+                        player.human_player_next_play(self)
+                    else:
+                        player.play_basic_strategy()
 
 class Player():
     def __init__(self, seat_number = 0):
@@ -167,12 +190,17 @@ class Player():
         self.hand_description = ""
         self.is_active = True
         
-    def update_hand_description(self):
+    def update_hand_description(self, game):
         self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
+        if self == game.dealer:
+            self.visible_hand_description = ", ".join(map(lambda x: x.name, self.hand[1:]))
     
-    def update_hand(self, card):
+    def update_hand(self, card, game):
         self.hand.append(card)
         self.hand_value += card.value
+        if self == game.dealer:
+            self.visible_value = self.hand_value - self.hand[0].value
+        self.update_hand_description(game)
         
     def update_money(self, bet):
         self.cash_money -= bet
@@ -183,3 +211,27 @@ class Player():
     
     def deactivate(self):
         self.is_active = False
+        
+    def play_basic_strategy(self):
+        print(f"basic strategy moves for {self.name}")
+        
+    def human_player_next_play(self, game):
+        available_moves = [
+            PlayerMoves.HIT,
+            PlayerMoves.STAY,
+            PlayerMoves.DOUBLE_DOWN
+        ]
+        if len(self.hand) == 2:
+            if self.hand[0].rank == self.hand[1].rank:
+                available_moves.append(PlayerMoves.SPLIT)
+        while True:
+            dealer_shows = f"{game.dealer.visible_hand_description} ({game.dealer.dealer_visible_value})"
+            print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({self.hand_value}).")
+            move = input(f"Next move? {', '.join(map(lambda x: x.value, available_moves))}: ")
+
+class Dealer(Player):
+    def __init__(self):
+        super().__init__()
+        self.visible_value = 0
+        self.visible_hand_description = ""
+        
