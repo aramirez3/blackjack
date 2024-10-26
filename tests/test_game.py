@@ -20,17 +20,26 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(game.minimum_bet, 5)
         self.assertEqual(len(game.seats), 5)
         
-    def test_start_game(self):
+    def test_create_human_player(self):
         game = Game()
-        game.start_new_game(3);
-        self.assertNotEqual(game.dealer, None)
-        self.assertNotEqual(game.human_player, None)
-        self.assertNotEqual(game.bot_players, [])
-        self.assertEqual(game.number_of_bots, 3)
+        game._create_human_player()
+        self.assertEqual(game.human_player.name, "Player 1")
+    
+    def test_create_dealer(self):
+        game = Game()
+        game._create_dealer()
+        self.assertEqual(game.dealer.name, "Dealer")
     
     def test_new_game_seats(self):
         game = Game()
-        game.start_new_game(4)
+        game.number_of_bots = 4
+        for i in range(0, 4):
+            bot = Player()
+            game.bot_players.append(bot)
+        human = Player()
+        game.human_player = human
+        game.human_player.seat_number = 3
+        game._assign_seating()
         self.assertNotEqual(game.seats, [[]]*5)
         seated = {}
         seated[game.seats[0]] = True
@@ -44,15 +53,10 @@ class TestTextNode(unittest.TestCase):
         
     def test_bot_players(self):
         game = Game()
-        game.start_new_game(2)
+        game._create_bot_players(2)
         self.assertEqual(len(game.bot_players), 2)
         self.assertNotEqual(game.bot_players[0], game.bot_players[1])
     
-    def test_bot_players_invalid_values(self):
-        game = Game()
-        game.start_new_game(-5)
-        self.assertEqual(len(game.bot_players), 0)
-        
     def test_shuff_deck(self):
         new_deck = Deck()
         game = Game()
