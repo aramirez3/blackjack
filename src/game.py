@@ -15,6 +15,7 @@ class Game():
     
     def _create_human_player(self):
         player = Player()
+        player.name = "Player 1"
         self.human_player = player
         return player
         
@@ -22,13 +23,15 @@ class Game():
         if 0 < bots < 5:
             self.number_of_bots = bots
             bots_list = []
-            for _ in range(bots):
+            for i in range(bots):
                 player = Player()
+                player.name = f"Bot {i}"
                 bots_list.append(player)
             self.bot_players.extend(bots_list)
         
     def _create_dealer(self):
         dealer = Player()
+        dealer.name = "Dealer"
         self.dealer = dealer
         
     def _assign_seating(self):
@@ -79,11 +82,54 @@ class Game():
     def place_bets(self):
         print("Place your bets!")
         current_bet = float(input())
+        self.human_player.hand_value -= current_bet
+        print(f"Your bet is {current_bet} ({self.human_player.hand_value} remaining)")
+        for player in self.bot_players:
+            player.hand_value -= self.minimum_bet
     
+    def deal_cards(self):
+        print("Dealing cards...")
+        for i in range(0, 2):
+            for player in self.seats:
+                if player != []:
+                    card1 = self.deck.pop()
+                    card2 = self.deck.pop()
+                    player.hand.append(card1)
+                    player.hand.append(card2)
+                    player.hand_value += card1.value
+                    player.hand_value += card2.value
+                    print(f"Cards remaining in deck: {len(self.deck)}")
+                    print(f"Player hand: {player.hand_value}")
+            self.dealer.hand.append(self.deck.pop)
+     
+    def print_player_hands(self):
+        if len(self.dealer.hand) > 2:
+            print(f"Dealer shows {', '.join(self.dealer.hand[1:])} ({self.dealer.hand_value})")
+        else:
+            print(f"Dealer shows {self.dealer.hand[1]} ({self.dealer.hand_value})")
+        for player in self.seats:
+            if player != []:
+                print(f"{player.name} shows {', '.join(player.hand)} ({player.hand_value})")
+
+    def update_game_status(self):
+        for i in range(0, len(self.seats)):
+            player = self.seats[i]
+            if player != []:
+                if player.hand_value < self.minimum_bet:
+                    if player == self.human_player:
+                        print(f"Game over! Better luck next time!")
+                        self.is_active = False
+                        return
+                    print(f"{player.name} has been eliminated!")
+                    self.seats[i] = []
+        pass
 
 class Player():
     def __init__(self, seat_number = 0):
+        self.name = ""
         self.hand = []
+        self.hand_value = 0
         self.cash_money = 0
         self.seat_number = seat_number
+        self.hand_description = ""
         
