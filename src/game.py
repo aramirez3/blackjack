@@ -126,7 +126,7 @@ class Game():
         for _ in range(0, 2):
             for player in self.seats:
                 if player != []:
-                    player.activate()
+                    player.activate(self)
                     if player.is_active:
                         player.update_hand(self.deck.pop())
                         player.update_hand_description()
