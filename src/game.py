@@ -186,11 +186,33 @@ class Game():
             else:
                 self.dealer_collects_or_pays_out()
         else:
+            self.check_for_blackjacks()
+            self.players_decide_next_move()
             self.state.end_first_hand()
+    
+    def check_for_blackjacks(self):
+        print(f"check if dealer has blackjack")
+        print(f"insurance?")
+        print(f"Dealer collects if dealer has blackjack")
+        print(f"Continue checking players for blackjack")
+        for player in self.seats:
+            if player != [] and player.is_active:
+                if player.hand_value == 21:
+                    player.has_blackjack(self)
     
     def dealer_collects_or_pays_out(self):
         print("dealer_collects_or_pays_out")
-            
+        if 17 <= self.dealer.hand_value <= 21:
+            print(f"Dealer has {self.dealer.hand_value}")
+            for player in self.seats:
+                if player != [] and player.is_active:
+                    if player.hand_value > 21:
+                        player.breaks(self)
+                    elif player.hand_value == self.dealer.hand_value:
+                        player.pushes(self)
+                    elif player.hand_value > self.dealer.hand_value:
+                        player.wins(self)
+                        
     def players_decide_next_move(self):
             for player in self.seats:
                 if player != [] and player.is_active:

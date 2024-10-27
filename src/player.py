@@ -44,33 +44,57 @@ class Player():
         
     def human_player_next_play(self, game):
         available_moves = [
-            self.valid_moves["h"],
-            self.valid_moves["s"],
-            self.valid_moves["dd"]
+            f"h = {self.valid_moves['h']}",
+            f"s = {self.valid_moves['s']}",
+            f"dd = {self.valid_moves['dd']}"
         ]
         if len(self.hand) == 2:
             if self.hand[0].rank == self.hand[1].rank:
-                available_moves.append(self.valid_moves["ss"])
+                available_moves.append(f"ss = {self.valid_moves['ss']}")
         dealer_shows = f"{game.dealer.visible_hand_description} ({game.dealer.visible_value})"
         print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({self.hand_value}).")
         while True:
             try:
-                move = input(f"Next move? {', '.join(map(lambda x: f"{self.valid_moves[x].key}: {self.valid_moves[x].value}", available_moves))}: ")
+                move = input(f"Next move? {', '.join(map(lambda x: x, available_moves))}: ")
                 if move in self.valid_moves:
-                    break
+                    match move:
+                        case "h":
+                            card = game.deck.pop()
+                            print(f"Hit - card draw is {card.name}")
+                            self.update_hand(card)
+                            print(f"Updated hand: {self.hand_description}")
+                        case "s":
+                            print("Stay")
+                            break
+                        case "dd":
+                            print("Double Down")
+                        case "ss":
+                            print("Split")
+                    
+                    if self.hand_value > 21:
+                        self.breaks(game)
+                        break
             except ValueError:
                 print("Please enter one of the valid options")
                 
-        match move:
-            case "h":
-                print("Hit")
-            case "s":
-                print("Stay")
-                return
-            case "dd":
-                print("Double Down")
-            case "ss":
-                print("Split")
+    def breaks(self, game):
+        print(f"{self.name} breaks!")
+        self.deactivate()
+        
+    def pushes(self, game):
+        print(f"{self.name} pushes!")
+        self.deactivate()
+        print("return current pot amount to player")
+    
+    def wins(self, game):
+        print(f"{self.name} wins!")
+        self.deactivate()
+        print("return current pot + match to player")
+        
+    def has_blackjack(self, game):
+        print(f"{self.name} has blackjack!")
+        self.deactivate
+        print("Give bet back to player + 3/2 of bet amount")
 
 
 class Dealer(Player):
