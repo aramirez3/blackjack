@@ -43,20 +43,23 @@ class Player():
     def deactivate(self):
         self.is_active = False
         
-    def play_basic_strategy(self):
+    def play_basic_strategy(self, game):
         print(f"basic strategy moves for {self.name}")
         while True:
             if len(self.hand) == 2 and self.hand[0].rank == self.hand[1].rank:
-                self.basic_strategy_pairs()
+                self.basic_strategy_pairs(game)
             if self.soft_hand:
-                self.basic_strategy_soft()
+                self.basic_strategy_soft(game)
             else:
-                self.basic_strategy_hard()
+                self.basic_strategy_hard(game)
     
-    def basic_strategy_soft(self):
+    def basic_strategy_soft(self, game):
+        print("Player's hand contains one Ace card")
         pass
     
-    def basic_strategy_hard(self):
+    def basic_strategy_hard(self, game):
+        print("Player's hand contains no Aces")
+        deal_upcard = sel
         pass
     
     def basic_strategy_pairs(self):

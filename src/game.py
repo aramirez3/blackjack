@@ -215,6 +215,7 @@ class Game():
             print("If players paid insurance, return insurance paid 2/1")
             print("For all other players, collect their bets")
             print("reset the hand state")
+            
         for player in self.seats:
             if player != [] and player.is_active:
                 if player.hand_value == 21:
@@ -251,4 +252,4 @@ class Game():
                     if player == self.human_player:
                         player.human_player_next_play(self)
                     else:
-                        player.play_basic_strategy()
+                        player.play_basic_strategy(self)
