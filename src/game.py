@@ -2,6 +2,8 @@ from random import randrange
 
 from deck import *
 from constants import *
+from player import *
+from game_state import *
 
 class Game():
     def __init__(self):
@@ -12,7 +14,8 @@ class Game():
         self.bot_players = []
         self.minimum_bet = 5
         self.seats = [[]] * 5
-        self.is_active = False
+        state = Game_State()
+        self.state = state
     
     def _create_human_player(self):
         player = Player()
@@ -27,6 +30,7 @@ class Game():
             for i in range(bots):
                 player = Player()
                 player.name = f"Bot {i + 1}"
+                player.cash_money = randrange(1,9) * 10 * self.minimum_bet
                 bots_list.append(player)
             self.bot_players.extend(bots_list)
         
@@ -52,7 +56,8 @@ class Game():
         self._create_bot_players(self.number_of_bots)
         self._assign_seating()
         self.shuffle_deck()
-        self.is_active = True
+        self.state.start_game
+        self.state.start_hand
     
     def shuffle_deck(self):
         print("----------------\nShuffling the deck")
@@ -66,7 +71,7 @@ class Game():
         print("Deck is shuffled\n----------------")
             
     def game_start_greeting(self):
-        print(f"current player: {self.human_player}")
+        print(f"current player: {self.human_player.name}")
         print(f"Welcome to the Blackjack table!\nThis table has minimum bets of {self.minimum_bet}.")
         
         self._select_seat_number()
@@ -74,50 +79,60 @@ class Game():
         self._select_bot_teammates()
 
     def _select_seat_number(self):
+        validation_message = "Please select a seat number from 1-5"
         while True:
             try:
                 seat_number = int(input("Pick a seat number (1-5): "))
                 if seat_number > 0 and seat_number <=5:
                     self.human_player.seat_number = seat_number - 1
                     break
+                else:
+                    print(validation_message)
             except ValueError:
-                print("Please select a seat number from 1-5")
+                print(validation_message)
     
     def _player_cash_in(self):
-         while True:
+        validation_message = f"Minimum bet is {self.minimum_bet}."
+        while True:
             try:
                 amount = float(input("How much would you like to cash in?: "))
                 if amount > self.minimum_bet:
                     self.human_player.cash_money = amount
                     print(f"Deep pockets! You now have {amount} worth of chips.")
                     break
+                else:
+                    print(validation_message)
             except ValueError:
-                print(f"Invalid entry. Minimum bet is {self.minimum_bet}.")
+                print(f"Invalid entry. {validation_message}")
         
     def _select_bot_teammates(self):
+        validation_message = "Please enter a number from 0 to 4"
         while True:
             try:
                 number_of_bots = int(input("How many bot players would you like to play with?: "))
-                if number_of_bots >= 0 and number_of_bots < 4:
+                if number_of_bots >= 0 and number_of_bots <= 4:
                     if (number_of_bots == 1):
                         print("OKAY! I see you want to 1v1. Good luck!")
                     else:
                         print("Excellent! Good luck, all!")
                     self.number_of_bots = number_of_bots
                     break
+                else:
+                    print(validation_message)
             except ValueError:
-                print("Invalid entry. Please enter 0-4: ")
+                print(f"Invalid entry. {validation_message}")
 
     def place_bets(self):
+        validation_message = f"Minimum bet is {self.minimum_bet}"
         while True:
             try:
                 current_bet = float(input(f"Place your bet (min: {self.minimum_bet}): "))
                 if current_bet >= self.minimum_bet:
                     break
                 else:
-                    print(f"Minimum bet is {self.minimum_bet}")
+                    print(validation_message)
             except ValueError:
-                print(f"Invalid input. Minimum bet is {self.minimum_bet}")
+                print(f"Invalid input. {validation_message}")
         self.human_player.update_money(current_bet)
         print(f"Your bet is {current_bet} ({self.human_player.cash_money} remaining)")
         for player in self.bot_players:
@@ -138,6 +153,10 @@ class Game():
             print(f"Cards remaining in deck: {len(self.deck)}")
      
     def print_player_hands(self):
+        for player in self.seats:
+            if player != [] and player != self.human_player:
+                print(f"--{player.name} shows {player.hand_description} ({player.hand_value})")
+        
         print(f"++Dealer's full hand = {self.dealer.hand_description}")
         if len(self.dealer.hand) > 2:
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
@@ -145,29 +164,29 @@ class Game():
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
         print(f"    --dealer visible value = {self.dealer.visible_value}")
         
-        for player in self.seats:
-            if player != [] and player != self.human_player:
-                print(f"--{player.name} shows {player.hand_description} ({player.hand_value})")
-        
         print(f"Your hand: {self.human_player.hand_description} ({self.human_player.hand_value})")
 
-    def update_game_status(self, first_round=True):
-        for player in self.seats:
-            if player != []:
-                if player.cash_money < self.minimum_bet:
-                    if player == self.human_player:
-                        print(f"Game over! The house ALWAYS wins!")
-                        self.is_active = False
-                        return
-                    print(f"{player.name} has been eliminated!")
-                    player.deactivate()
+    def update_game_status(self):
+        if not self.state.first_hand:
+            for player in self.seats:
+                if player != []:
+                    if player.cash_money < self.minimum_bet:
+                        if player == self.human_player:
+                            print(f"Game over! The house ALWAYS wins!")
+                            self.state.end_game
+                            return
+                        print(f"{player.name} has been eliminated!")
+                        player.deactivate()
     
     def decide_next_round(self):
-        if self.dealer.hand_value < 17:
-            self.players_decide_next_move()
-            return
+        if not self.state.first_hand:
+            if self.dealer.hand_value < 17:
+                self.players_decide_next_move()
+                return
+            else:
+                self.dealer_collects_or_pays_out()
         else:
-            self.dealer_collects_or_pays_out()
+            self.state.end_first_hand()
     
     def dealer_collects_or_pays_out(self):
         print("dealer_collects_or_pays_out")
@@ -179,59 +198,3 @@ class Game():
                         player.human_player_next_play(self)
                     else:
                         player.play_basic_strategy()
-
-class Player():
-    def __init__(self, seat_number = 0):
-        self.name = ""
-        self.hand = []
-        self.hand_value = 0
-        self.cash_money = 0
-        self.seat_number = seat_number
-        self.hand_description = ""
-        self.is_active = True
-        
-    def update_hand_description(self, game):
-        self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
-        if self == game.dealer:
-            self.visible_hand_description = ", ".join(map(lambda x: x.name, self.hand[1:]))
-    
-    def update_hand(self, card, game):
-        self.hand.append(card)
-        self.hand_value += card.value
-        if self == game.dealer:
-            self.visible_value = self.hand_value - self.hand[0].value
-        self.update_hand_description(game)
-        
-    def update_money(self, bet):
-        self.cash_money -= bet
-        
-    def activate(self, game):
-        if self.cash_money > game.minimum_bet:
-            self.is_active = True
-    
-    def deactivate(self):
-        self.is_active = False
-        
-    def play_basic_strategy(self):
-        print(f"basic strategy moves for {self.name}")
-        
-    def human_player_next_play(self, game):
-        available_moves = [
-            PlayerMoves.HIT,
-            PlayerMoves.STAY,
-            PlayerMoves.DOUBLE_DOWN
-        ]
-        if len(self.hand) == 2:
-            if self.hand[0].rank == self.hand[1].rank:
-                available_moves.append(PlayerMoves.SPLIT)
-        while True:
-            dealer_shows = f"{game.dealer.visible_hand_description} ({game.dealer.dealer_visible_value})"
-            print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({self.hand_value}).")
-            move = input(f"Next move? {', '.join(map(lambda x: x.value, available_moves))}: ")
-
-class Dealer(Player):
-    def __init__(self):
-        super().__init__()
-        self.visible_value = 0
-        self.visible_hand_description = ""
-        

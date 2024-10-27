@@ -29,5 +29,5 @@ class Ranks(Enum_Helper):
 class PlayerMoves(Enum_Helper):
     HIT = "h = hit"
     STAY = "s = stay"
-    DOUBLE_DOWN = "d = double down"
-    SPLIT = "s = split"
+    DOUBLE_DOWN = "dd = double down"
+    SPLIT = "ss = split"

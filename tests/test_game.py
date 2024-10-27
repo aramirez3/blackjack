@@ -3,6 +3,7 @@ import sys
 sys.path.append('src')
 
 from game import *
+from player import * 
 
 
 class TestTextNode(unittest.TestCase):
