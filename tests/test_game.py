@@ -68,7 +68,30 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(game.deck[3], new_deck.game_deck[3])
         self.assertNotEqual(game.deck[4], new_deck.game_deck[4])
     
+    def test_dealer_shows_ace(self):
+        game = Game()
+        dealer = Dealer()
+        game.dealer = dealer
+        ace_card = Card(Suits.SPADES, Ranks.ACE)
+        card = Card(Suits.HEARTS, Ranks.THREE)
+        game.dealer.hand.extend([card, ace_card])
+        self.assertTrue(game.dealer.dealer_shows_initial_ace())
     
+    def test_dealer_has_hidden_ace(self):
+        game = Game()
+        dealer = Dealer()
+        game.dealer = dealer
+        ace_card = Card(Suits.SPADES, Ranks.ACE)
+        card = Card(Suits.HEARTS, Ranks.THREE)
+        game.dealer.hand.extend([ace_card, card])
+        self.assertFalse(game.dealer.dealer_shows_initial_ace())
+        
+    def test_player_soft_hand(self):
+        game = Game()
+        player = Player()
+        ace_card = Card(Suits.SPADES, Ranks.ACE)
+        card = Card(Suits.HEARTS, Ranks.THREE)
+        player.hand = [card, ace_card]
         
 if __name__ == "__main__":
     unittest.main()

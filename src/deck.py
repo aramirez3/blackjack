@@ -7,16 +7,12 @@ class Card():
         self.name = f"{rank} of {suit}"
         self.value = None
         self.ace = False
-        self.soft_ace = False
         self._set_value()
         
     def _set_value(self):
         match (self.rank):
             case Ranks.ACE:
-                if self.ace and not self.soft_ace:
-                    self.value = 11
-                else:
-                    self.value = 1
+                self.value = 1
             case Ranks.TWO:
                 self.value = 2
             case Ranks.THREE:

@@ -140,9 +140,9 @@ class Game():
                 player.update_money(self.minimum_bet)
         print("All bets have been placed")
     
-    def deal_cards(self, quantity = 1):
+    def deal_cards(self):
         print("Dealing cards...")
-        for _ in range(0, quantity):
+        for _ in range(0, 2):
             for player in self.seats:
                 if player != []:
                     player.activate(self)
@@ -162,7 +162,10 @@ class Game():
     def print_player_hands(self):
         for player in self.seats:
             if player != [] and player != self.human_player:
-                print(f"--{player.name} shows {player.hand_description} ({player.hand_value})")
+                hand_value_desc = player.hand_value
+                if player.soft_hand:
+                    hand_value_desc = f"{player.hand_value} or {player.hand_value + 10}"
+                print(f"--{player.name} shows {player.hand_description} ({hand_value_desc})")
         
         print(f"++Dealer's full hand = {self.dealer.hand_description}")
         if len(self.dealer.hand) > 2:
@@ -171,7 +174,10 @@ class Game():
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
         print(f"    --dealer visible value = {self.dealer.visible_value}")
         
-        print(f"Your hand: {self.human_player.hand_description} ({self.human_player.hand_value})")
+        hand_value_desc = player.hand_value
+        if self.human_player.soft_hand:
+            hand_value_desc = f"{self.human_player.hand_value} or {self.human_player.hand_value + 10}"
+        print(f"Your hand: {self.human_player.hand_description} ({hand_value_desc})")
 
     def update_game_status(self):
         if not self.state.first_hand:

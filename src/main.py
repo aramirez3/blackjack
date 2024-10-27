@@ -5,7 +5,7 @@ def main():
     while game.state.game_is_active:
         print("game loop")
         game.place_bets()
-        game.deal_cards(2)
+        game.deal_cards()
         while game.state.hand_is_active:
             print("hand loop")
             game.print_player_hands()
