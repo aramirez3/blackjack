@@ -147,10 +147,15 @@ class Game():
                 if player != []:
                     player.activate(self)
                     if player.is_active:
-                        player.update_hand(self.deck.pop(), self)
-            card = self.deck.pop()
-            self.dealer.update_hand(card, self)
+                        self.draw_card(player)
+            self.draw_card(self.dealer)
             print(f"Cards remaining in deck: {len(self.deck)}")
+    
+    def draw_card(self, player):
+        card = self.deck.pop()
+        self.state.count_card(card, self)
+        player.update_hand(card, self)
+        return card
      
     def print_player_hands(self):
         for player in self.seats:

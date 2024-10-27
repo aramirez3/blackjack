@@ -21,6 +21,8 @@ class Player():
         self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
         if self == game.dealer:
             self.visible_hand_description = ", ".join(map(lambda x: x.name, self.hand[1:]))
+            if game.state.first_hand:
+                self.up_card = self.hand[1:]
     
     def update_hand(self, card, game):
         self.hand.append(card)
@@ -59,9 +61,8 @@ class Player():
                 if move in self.valid_moves:
                     match move:
                         case "h":
-                            card = game.deck.pop()
+                            card = game.draw_card(self)
                             print(f"Hit - card draw is {card.name}")
-                            self.update_hand(card)
                             print(f"Updated hand: {self.hand_description}")
                         case "s":
                             print("Stay")
@@ -102,4 +103,5 @@ class Dealer(Player):
         super().__init__()
         self.visible_value = 0
         self.visible_hand_description = ""
+        self.up_card = None
         
