@@ -17,6 +17,7 @@ class Player():
         self.hand_description = ""
         self.is_active = True
         self.soft_hand = False
+        self.current_bet = 0
         
     def update_hand_description(self, game):
         self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
@@ -116,6 +117,11 @@ class Player():
 
     def set_soft_status(self):
         self.soft_hand = True
+    
+    def pay_insurance_fee(self, game):
+        fee = self.current_bet / 2
+        self.cash_money -= fee
+        game.state.insurance_collected[self] = fee
 
 class Dealer(Player):
     def __init__(self):
@@ -123,4 +129,16 @@ class Dealer(Player):
         self.visible_value = 0
         self.visible_hand_description = ""
         self.up_card = None
+        
+    def dealer_shows_initial_ace(self):
+        if self.hand[1].rank == Ranks.ACE:
+            return True
+        return False
+    
+    def has_blackjack(self):
+        print("Checking for dealer blackjack")
+        if self.hand_value == 21:
+            print("Dealer has blackjack!")
+            return True
+        return False
         

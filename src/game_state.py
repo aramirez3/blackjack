@@ -7,6 +7,7 @@ class Game_State():
         self.first_hand = True
         self.running_count = 0
         self.true_count = 0
+        self.insurance_collected = {}
         
     def start_game(self):
         self.game_is_active = True

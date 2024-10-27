@@ -198,14 +198,33 @@ class Game():
             self.state.end_first_hand()
     
     def check_for_blackjacks(self):
-        print(f"check if dealer has blackjack")
-        print(f"insurance?")
-        print(f"Dealer collects if dealer has blackjack")
-        print(f"Continue checking players for blackjack")
+        if self.dealer.dealer_shows_initial_ace():
+            player_pays_insurance = self.request_insurance()
+            if player_pays_insurance:
+                self.human_player.pay_insurance_fee(self)
+        
+        dealer_has_blackjack = self.dealer.has_blackjack()
+        
+        if dealer_has_blackjack:
+            print("If players paid insurance, return insurance paid 2/1")
+            print("For all other players, collect their bets")
+            print("reset the hand state")
         for player in self.seats:
             if player != [] and player.is_active:
                 if player.hand_value == 21:
                     player.has_blackjack(self)
+    
+    def request_insurance(self):
+        while True:
+            try:
+                insurance = input("Dealer shows Ace! Insurance? Enter 'y' or 'n': ")
+                if insurance == 'y':
+                    return True
+                elif insurance == 'n':
+                    return False
+            except ValueError:
+                print("Plese enter 'y' or 'n'")
+            
     
     def dealer_collects_or_pays_out(self):
         print("dealer_collects_or_pays_out")
