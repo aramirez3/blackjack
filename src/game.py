@@ -174,7 +174,7 @@ class Game():
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
         print(f"    --dealer visible value = {self.dealer.visible_value}")
         
-        hand_value_desc = player.hand_value
+        hand_value_desc = self.human_player.hand_value
         if self.human_player.soft_hand:
             hand_value_desc = f"{self.human_player.hand_value} or {self.human_player.hand_value + 10}"
         print(f"Your hand: {self.human_player.hand_description} ({hand_value_desc})")

@@ -20,11 +20,12 @@ class Player():
         self.current_bet = 0
         
     def update_hand_description(self, game):
-        self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
-        if self == game.dealer:
-            self.visible_hand_description = ", ".join(map(lambda x: x.name, self.hand[1:]))
-            if game.state.first_hand:
-                self.up_card = self.hand[1:]
+        if len(self.hand) >= 2:
+            self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
+            if self == game.dealer:
+                self.visible_hand_description = ", ".join(map(lambda x: x.name, self.hand[1:]))
+                if game.state.first_hand:
+                    self.up_card = self.hand[1]
     
     def update_hand(self, card, game):
         self.hand.append(card)
@@ -59,12 +60,108 @@ class Player():
     
     def basic_strategy_hard(self, game):
         print("Player's hand contains no Aces")
-        deal_upcard = sel
-        pass
+        up_card = game.dealer.up_card
+        while True:
+            exit = False
+            print(f"first_hand {game.state.first_hand}")
+            print(f"hand value {self.hand_value}")
+            input()
+            
+            if self.hand_value > 21:
+                self.breaks(game)
+                exit = True
+                break
+            elif self.hand_value >= 17:
+                self.stay()
+                exit = True
+                break
+            if up_card.value >= 7 or up_card.rank == Ranks.ACE:
+                if 12 <= self.hand_value <= 16:
+                    self.hit(game)
+                    continue
+                elif self.hand_value == 11:
+                    if self.cash_money > self.current_bet:
+                        if game.state.first_hand:
+                            self.double_down(game)
+                            return
+                        else:
+                            self.hit()
+                            continue
+                    else:
+                        self.hit(game)
+                        continue
+                elif self.hand_value == 10:
+                    if up_card.value == 10 or up_card.rank == Ranks.ACE:
+                        self.hit(game)
+                        continue
+                else:
+                    self.hit(game)
+                    continue
+            else:
+                if 13 <= self.hand_value <= 17:
+                    self.stay()
+                    exit = True
+                    break
+                elif self.hand_value == 12:
+                    if 4 <= up_card.value <= 6:
+                        self.stay()
+                        exit = True
+                        break
+                    else:
+                        self.hit(game)
+                        continue
+                elif self.hand_value == 11:
+                    if game.state.first_hand:
+                        self.double_down(game)
+                        exit = True
+                        break
+                    else:
+                        self.hit()
+                        continue
+                elif self.hand_value == 10:
+                    if 2<= up_card.value <= 9:
+                        self.double_down(game)
+                        exit = True
+                        break
+                    else:
+                        self.hit(game)
+                        continue
+                elif self.hand_value == 9:
+                    if 3 <= up_card.value <= 6:
+                        if game.state.first_hand:
+                            self.double_down(game)
+                            exit = True
+                            break
+                        else:
+                            self.hit()
+                            continue
+                else:
+                    self.hit(game)
+            print(f"first_hand {game.state.first_hand}")
+            game.state.end_first_hand()
+            print(f"first_hand {game.state.first_hand}")
+            print(f"hand value {self.hand_value}")
+            print(f"Exit loop? {exit}")
+            input()
+            if exit:
+                return
+                        
     
     def basic_strategy_pairs(self):
         pass
-        
+    
+    def stay(self):
+        print(f"{self.name} stays")
+    
+    def hit(self, game):
+        card = game.draw_card(self)
+        print(f"{self.name} draws {card.value} ({self.hand_value})")
+    
+    def double_down(self, game):
+        print(f"{self.name} doubles down")
+        self.cash_money -= self.current_bet
+        self.hit(game)
+    
     def human_player_next_play(self, game):
         available_moves = [
             f"h = {self.valid_moves['h']}",
