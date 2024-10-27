@@ -27,7 +27,6 @@ class Game_State():
         self.first_hand = False
         
     def count_card(self, card, game):
-        print(f"Card rank {card.rank} | ranks.ace {Ranks.ACE}")
         if card.rank == Ranks.TWO or card.rank == Ranks.THREE or card.rank == Ranks.FOUR or card.rank == Ranks.FIVE:
             game.state.running_count += 1
         if card.rank == Ranks.ACE or card.rank == Ranks.JACK or card.rank == Ranks.QUEEN or card.rank == Ranks.KING:

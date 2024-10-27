@@ -123,7 +123,7 @@ class Game():
                 print(f"Invalid entry. {validation_message}")
 
     def place_bets(self):
-        validation_message = f"Minimum bet is {self.minimum_bet}"
+        validation_message = f"Minimum bet is {self.minimum_bet} (True count {self.state.true_count})"
         while True:
             try:
                 current_bet = float(input(f"Place your bet (min: {self.minimum_bet}): "))
@@ -153,6 +153,8 @@ class Game():
     
     def draw_card(self, player):
         card = self.deck.pop()
+        if card.rank == Ranks.ACE:
+            player.set_soft_status()
         self.state.count_card(card, self)
         player.update_hand(card, self)
         return card

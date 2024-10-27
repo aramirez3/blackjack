@@ -16,6 +16,7 @@ class Player():
         self.seat_number = seat_number
         self.hand_description = ""
         self.is_active = True
+        self.soft_hand = False
         
     def update_hand_description(self, game):
         self.hand_description = ", ".join(map(lambda x: x.name, self.hand))
@@ -43,6 +44,22 @@ class Player():
         
     def play_basic_strategy(self):
         print(f"basic strategy moves for {self.name}")
+        while True:
+            if len(self.hand) == 2 and self.hand[0].rank == self.hand[1].rank:
+                self.basic_strategy_pairs()
+            if self.soft_hand:
+                self.basic_strategy_soft()
+            else:
+                self.basic_strategy_hard()
+    
+    def basic_strategy_soft(self):
+        pass
+    
+    def basic_strategy_hard(self):
+        pass
+    
+    def basic_strategy_pairs(self):
+        pass
         
     def human_player_next_play(self, game):
         available_moves = [
@@ -97,6 +114,8 @@ class Player():
         self.deactivate
         print("Give bet back to player + 3/2 of bet amount")
 
+    def set_soft_status(self):
+        self.soft_hand = True
 
 class Dealer(Player):
     def __init__(self):
