@@ -241,7 +241,8 @@ class Game():
         elif 17 <= self.dealer.hand_value <= 21:
             print(f"Dealer has {self.dealer.hand_value}")
             for player in self.seats:
-                if player.split is not None:
+                print(f"Value of player.split {player.split}")
+                if player.split is None:
                     if player.hand_value > 21:
                         player.breaks()
                     elif player.hand_value == self.dealer.hand_value:
@@ -252,9 +253,8 @@ class Game():
                         player.loses_hand()
                 else:
                     for hand in player.split["hands"]:
-                        if hand.value > 21:
-                            if hand.value <= 21 and hand.value > self.dealer.hand_value:
-                                player.increment_player_money(player.current_bet * 2)
+                        if hand.value <= 21 and hand.value > self.dealer.hand_value:
+                            player.increment_player_money(player.current_bet * 2)
                         
     def players_make_moves(self):
         for player in self.seats:

@@ -142,7 +142,7 @@ class Player():
             f"s = {self.valid_moves['s']}",
         ]
         if len(self.hand) == 2:
-            if self.hand[0].rank == self.hand[1].rank:
+            if self.hand[0].value == self.hand[1].value:
                 available_moves.append(f"ss = {self.valid_moves['ss']}")
             if game.state.first_hand:
                 available_moves.append(f"dd = {self.valid_moves['dd']}")
@@ -150,7 +150,10 @@ class Player():
                 
     def human_player_next_play(self, game):
         dealer_shows = f"{game.dealer.visible_hand_description} ({game.dealer.visible_value})"
-        print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({self.hand_value}).")
+        hand_value_desc = self.hand_value
+        if self.soft_hand:
+            hand_value_desc = f"{self.hand_value} or {self.hand_value + 10}"
+        print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({hand_value_desc}).")
         while True:
             available_moves = self.get_valid_moves(game)
             try:
