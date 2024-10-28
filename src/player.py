@@ -19,6 +19,7 @@ class Player():
         self.soft_hand = False
         self.current_bet = 0
         self.insurance_paid = 0
+        self.split = None
         
     def update_hand_description(self, game):
         if len(self.hand) >= 2:
@@ -85,7 +86,7 @@ class Player():
             if card.rank == Ranks.ACE:
                 if self.soft_hand:
                     hand_value_desc = f"{self.hand_value} or {self.hand_value + 10}"
-        print(f"{self.name} draws {card.rank} ({hand_value_desc})")
+        print(f"{self.name} draws {card.name} ({hand_value_desc})")
     
     def double_down(self, game):
         print(f"{self.name} doubles down")
@@ -95,7 +96,45 @@ class Player():
         
     def split(self, game):
         print(f"{self.name} splits")
-        print("Implement split play")
+        self.reduce_player_money(self.current_bet)
+        card1 = self.hand[0]
+        card2 = self.hand[1]
+        self.split = {
+            "hands": [
+                { 
+                    "cards": [card1],
+                    "value": card1.value
+                },
+                {
+                    "cards": [card2],
+                    "value": card2.value
+                }
+            ]
+        }
+        for hand in self.split.hands:
+            cards = hand.cards
+            current_value = hand.value
+            first_card = game.deck.pop()
+            cards.append(first_card)
+            current_value += first_card
+            print(f"{self.name} draws {first_card.name} ({current_value})")
+            while True:
+                try:
+                    move = input("h = hit, s = stay")
+                    if move == "h":
+                        print(f"{self.name} hits")
+                        card = game.deck.pop()
+                        cards.append(card)
+                        current_value += card
+                    elif move == "s":
+                        print(f"{self.name} stays")
+                        break
+                    if current_value > 21:
+                        print(f"{self.name}'s split hand busts")
+                        break
+                except ValueError:
+                    print("Please enter one of the valid options")
+            
     
     def get_valid_moves(self, game):
         available_moves = [
