@@ -151,13 +151,11 @@ class Game():
     def deal_cards(self):
         print("Dealing cards...")
         for _ in range(0, 2):
-            print(self.seats)
             for player in self.seats:
                 player.activate(self)
                 if player.is_active:
                     self.draw_card(player)
             self.draw_card(self.dealer)
-            print(f"Cards remaining in deck: {len(self.deck)}")
     
     def draw_card(self, player):
         card = self.deck.pop()
@@ -245,7 +243,6 @@ class Game():
             
     
     def dealer_collects_or_pays_out(self):
-        print("\n")
         if self.dealer.hand_value > 21:
             for player in self.seats:
                 if player.is_active:
@@ -253,13 +250,14 @@ class Game():
         elif 17 <= self.dealer.hand_value <= 21:
             print(f"Dealer has {self.dealer.hand_value}")
             for player in self.seats:
-                if player.is_active:
-                    if player.hand_value > 21:
-                        player.breaks()
-                    elif player.hand_value == self.dealer.hand_value:
-                        player.pushes()
-                    elif player.hand_value > self.dealer.hand_value:
-                        player.wins()
+                if player.hand_value > 21:
+                    player.breaks()
+                elif player.hand_value == self.dealer.hand_value:
+                    player.pushes()
+                elif player.hand_value > self.dealer.hand_value:
+                    player.wins()
+                elif player.hand_value < self.dealer.hand_value:
+                    player.loses_hand()
         else:
             for player in self.seats:
                 if player.is_active:
@@ -276,11 +274,12 @@ class Game():
         self.dealer_collects_or_pays_out()
     
     def start_next_round(self):
-        self._reset_hand_values()
+        self._reset_game_state()
         self.place_bets()
         self.deal_cards()
     
-    def _reset_hand_values(self):
+    def _reset_game_state(self):
+        self.state.first_hand = True
         for player in self.seats:
             player.reset()
         self.dealer.reset()

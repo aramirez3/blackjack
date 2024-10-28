@@ -100,14 +100,13 @@ class Player():
                 if move in self.valid_moves:
                     match move:
                         case "h":
-                            card = game.draw_card(self)
-                            print(f"Hit - card draw is {card.name}")
-                            print(f"Updated hand: {self.hand_description} ({self.hand_value})")
+                            self.hit(game)
                         case "s":
-                            print("Stay")
+                            self.stay()
                             break
                         case "dd":
-                            print("Double Down")
+                            self.double_down(game)
+                            break
                         case "ss":
                             print("Split")
                     
