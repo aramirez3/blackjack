@@ -2,7 +2,7 @@ from random import randrange
 
 from deck import *
 from constants import *
-from player import *
+from player import Player, Dealer
 from game_state import *
 
 class Game():
@@ -48,6 +48,12 @@ class Game():
             if seat_number != reserved_seat and self.seats[seat_number] == []:
                 self.seats[seat_number] = self.bot_players[bots_remaining - 1]
                 bots_remaining -= 1
+        self._remove_empty_seats()
+                
+    def _remove_empty_seats(self):
+        for i in range(0, len(self.seats)):
+            if self.seats[i] == []:
+                del self.seats[i]
     
     def start_new_game(self):
         self._create_human_player()
@@ -144,10 +150,9 @@ class Game():
         print("Dealing cards...")
         for _ in range(0, 2):
             for player in self.seats:
-                if player != []:
-                    player.activate(self)
-                    if player.is_active:
-                        self.draw_card(player)
+                player.activate(self)
+                if player.is_active:
+                    self.draw_card(player)
             self.draw_card(self.dealer)
             print(f"Cards remaining in deck: {len(self.deck)}")
     
@@ -161,7 +166,7 @@ class Game():
      
     def print_player_hands(self):
         for player in self.seats:
-            if player != [] and player != self.human_player:
+            if player != self.human_player:
                 hand_value_desc = player.hand_value
                 if player.soft_hand:
                     hand_value_desc = f"{player.hand_value} or {player.hand_value + 10}"
@@ -182,14 +187,13 @@ class Game():
     def update_game_status(self):
         if not self.state.first_hand:
             for player in self.seats:
-                if player != []:
-                    if player.cash_money < self.minimum_bet:
-                        if player == self.human_player:
-                            print(f"Game over! The house ALWAYS wins!")
-                            self.state.end_game
-                            return
-                        print(f"{player.name} has been eliminated!")
-                        player.deactivate()
+                if player.cash_money < self.minimum_bet:
+                    if player == self.human_player:
+                        print(f"Game over! The house ALWAYS wins!")
+                        self.state.end_game
+                        return
+                    print(f"{player.name} has been eliminated!")
+                    player.deactivate()
     
     def decide_next_round(self):
         if not self.state.first_hand:
@@ -217,7 +221,7 @@ class Game():
             print("reset the hand state")
             
         for player in self.seats:
-            if player != [] and player.is_active:
+            if player.is_active:
                 if player.hand_value == 21:
                     player.has_blackjack(self)
     
@@ -238,7 +242,7 @@ class Game():
         if 17 <= self.dealer.hand_value <= 21:
             print(f"Dealer has {self.dealer.hand_value}")
             for player in self.seats:
-                if player != [] and player.is_active:
+                if player.is_active:
                     if player.hand_value > 21:
                         player.breaks(self)
                     elif player.hand_value == self.dealer.hand_value:
@@ -248,7 +252,7 @@ class Game():
                         
     def players_decide_next_move(self):
             for player in self.seats:
-                if player != [] and player.is_active:
+                if player.is_active:
                     if player == self.human_player:
                         player.human_player_next_play(self)
                     else:
