@@ -18,6 +18,7 @@ class Player():
         self.is_active = True
         self.soft_hand = False
         self.current_bet = 0
+        self.insurance_paid = 0
         
     def update_hand_description(self, game):
         if len(self.hand) >= 2:
@@ -41,14 +42,13 @@ class Player():
         if self.cash_money > game.minimum_bet:
             self.is_active = True
     
-    def deactivate(self):
+    def end_current_turn(self):
         self.is_active = False
         
     def bot_player_next_play(self, game):
-        print(f"basic strategy moves for {self.name}")
         while True:
             if self.hand_value > 21:
-                self.breaks(game)
+                self.breaks()
                 break
             elif self.hand_value >= 17:
                 self.stay()
@@ -71,12 +71,17 @@ class Player():
     
     def hit(self, game):
         card = game.draw_card(self)
-        print(f"{self.name} draws {card.value} ({self.hand_value})")
+        hand_value_desc = self.hand_value
+        if card.rank == Ranks.ACE:
+            if self.soft_hand:
+                hand_value_desc = f"{self.hand_value} or {self.hand_value + 10}"
+        print(f"{self.name} draws {card.rank} ({hand_value_desc})")
     
     def double_down(self, game):
         print(f"{self.name} doubles down")
-        self.cash_money -= self.current_bet
         self.hit(game)
+        self.cash_money -= self.current_bet
+        self.end_current_turn()
     
     def human_player_next_play(self, game):
         available_moves = [
@@ -97,7 +102,7 @@ class Player():
                         case "h":
                             card = game.draw_card(self)
                             print(f"Hit - card draw is {card.name}")
-                            print(f"Updated hand: {self.hand_description}")
+                            print(f"Updated hand: {self.hand_description} ({self.hand_value})")
                         case "s":
                             print("Stay")
                             break
@@ -107,29 +112,33 @@ class Player():
                             print("Split")
                     
                     if self.hand_value > 21:
-                        self.breaks(game)
+                        self.breaks()
                         break
             except ValueError:
                 print("Please enter one of the valid options")
                 
-    def breaks(self, game):
+    def loses_hand(self):
+        print(f"{self.name} loses hand!")
+        self.end_current_turn()
+                  
+    def breaks(self):
         print(f"{self.name} breaks!")
-        self.deactivate()
+        self.end_current_turn()
         
-    def pushes(self, game):
+    def pushes(self):
         print(f"{self.name} pushes!")
-        self.deactivate()
-        print("return current pot amount to player")
+        self.end_current_turn()
+        self.cash_money += self.current_bet
     
-    def wins(self, game):
+    def wins(self):
         print(f"{self.name} wins!")
-        self.deactivate()
-        print("return current pot + match to player")
+        self.end_current_turn()
+        self.cash_money += self.current_bet * 2
         
-    def has_blackjack(self, game):
+    def has_blackjack(self):
         print(f"{self.name} has blackjack!")
-        self.deactivate
-        print("Give bet back to player + 3/2 of bet amount")
+        self.end_current_turn()
+        self.cash_money += (self.current_bet * 3 / 2)
 
     def set_soft_status(self):
         self.soft_hand = True
@@ -141,7 +150,16 @@ class Player():
     def pay_insurance_fee(self, game):
         fee = self.current_bet / 2
         self.cash_money -= fee
-        game.state.insurance_collected[self] = fee
+        self.insurance_paid = fee
+        
+    def reset(self):
+        self.hand = []
+        self.hand_value = 0
+        self.hand_description = ""
+        self.is_active = True
+        self.soft_hand = False
+        self.current_bet = 0
+        self.insurance_paid = 0
 
 class Dealer(Player):
     def __init__(self):
@@ -161,4 +179,19 @@ class Dealer(Player):
             print("Dealer has blackjack!")
             return True
         return False
+    
+    def makes_moves(self, game):
+        while self.hand_value < 17:
+            self.hit(game)
+    
+    def reset(self):
+        self.hand = []
+        self.hand_value = 0
+        self.hand_description = ""
+        self.is_active = True
+        self.soft_hand = False
+        self.current_bet = 0
+        self.visible_value = 0
+        self.visible_hand_description = ""
+        self.up_card = None
         

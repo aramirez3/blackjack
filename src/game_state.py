@@ -33,4 +33,3 @@ class Game_State():
         if card.rank == Ranks.ACE or card.rank == Ranks.JACK or card.rank == Ranks.QUEEN or card.rank == Ranks.KING:
             game.state.running_count -= 1
         game.state.true_count = round(game.state.running_count / (len(game.deck) / 52))
-        print(f"running count: {game.state.running_count} / true count: {game.state.true_count}")

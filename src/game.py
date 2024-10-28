@@ -51,9 +51,11 @@ class Game():
         self._remove_empty_seats()
                 
     def _remove_empty_seats(self):
-        for i in range(0, len(self.seats)):
-            if self.seats[i] == []:
-                del self.seats[i]
+        seats = []
+        for seat in self.seats:
+            if seat != []:
+                seats.append(seat)
+        self.seats = seats
     
     def start_new_game(self):
         self._create_human_player()
@@ -104,7 +106,7 @@ class Game():
                 amount = float(input("How much would you like to cash in?: "))
                 if amount > self.minimum_bet:
                     self.human_player.cash_money = amount
-                    print(f"Deep pockets! You now have {amount} worth of chips.")
+                    print(f"You now have {amount} worth of chips.")
                     break
                 else:
                     print(validation_message)
@@ -132,7 +134,7 @@ class Game():
         validation_message = f"Minimum bet is {self.minimum_bet} (True count {self.state.true_count})"
         while True:
             try:
-                current_bet = float(input(f"Place your bet (min: {self.minimum_bet}): "))
+                current_bet = float(input(f"Place your bet (min: {self.minimum_bet})[true count {self.state.true_count}]: "))
                 if current_bet >= self.minimum_bet:
                     break
                 else:
@@ -149,6 +151,7 @@ class Game():
     def deal_cards(self):
         print("Dealing cards...")
         for _ in range(0, 2):
+            print(self.seats)
             for player in self.seats:
                 player.activate(self)
                 if player.is_active:
@@ -177,7 +180,6 @@ class Game():
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
         else:
             print(f"++Dealer shows {self.dealer.visible_hand_description}")
-        print(f"    --dealer visible value = {self.dealer.visible_value}")
         
         hand_value_desc = self.human_player.hand_value
         if self.human_player.soft_hand:
@@ -193,21 +195,22 @@ class Game():
                         self.state.end_game
                         return
                     print(f"{player.name} has been eliminated!")
-                    player.deactivate()
+                    player.end_current_turn()
     
     def decide_next_round(self):
         if not self.state.first_hand:
             if self.dealer.hand_value < 17:
-                self.players_decide_next_move()
+                self.players_make_moves()
                 return
             else:
                 self.dealer_collects_or_pays_out()
         else:
             self.check_for_blackjacks()
-            self.players_decide_next_move()
+            self.players_make_moves()
             self.state.end_first_hand()
     
     def check_for_blackjacks(self):
+        print("Checking for blackjacks")
         if self.dealer.dealer_shows_initial_ace():
             player_pays_insurance = self.request_insurance()
             if player_pays_insurance:
@@ -216,8 +219,12 @@ class Game():
         dealer_has_blackjack = self.dealer.has_blackjack()
         
         if dealer_has_blackjack:
-            print("If players paid insurance, return insurance paid 2/1")
-            print("For all other players, collect their bets")
+            for player in self.seats:
+                if player.is_active:
+                    if player.insurance_paid > 0:
+                        player.cash_money += player.insurance_paid * 2
+                    else:
+                        player.loses_hand()
             print("reset the hand state")
             
         for player in self.seats:
@@ -238,22 +245,42 @@ class Game():
             
     
     def dealer_collects_or_pays_out(self):
-        print("dealer_collects_or_pays_out")
-        if 17 <= self.dealer.hand_value <= 21:
+        print("\n")
+        if self.dealer.hand_value > 21:
+            for player in self.seats:
+                if player.is_active:
+                    player.wins()
+        elif 17 <= self.dealer.hand_value <= 21:
             print(f"Dealer has {self.dealer.hand_value}")
             for player in self.seats:
                 if player.is_active:
                     if player.hand_value > 21:
-                        player.breaks(self)
+                        player.breaks()
                     elif player.hand_value == self.dealer.hand_value:
-                        player.pushes(self)
+                        player.pushes()
                     elif player.hand_value > self.dealer.hand_value:
-                        player.wins(self)
-                        
-    def players_decide_next_move(self):
+                        player.wins()
+        else:
             for player in self.seats:
                 if player.is_active:
-                    if player == self.human_player:
-                        player.human_player_next_play(self)
-                    else:
-                        player.bot_player_next_play(self)
+                    player.hand_value += player.current_bet * 2
+                        
+    def players_make_moves(self):
+        for player in self.seats:
+            if player.is_active:
+                if player == self.human_player:
+                    player.human_player_next_play(self)
+                else:
+                    player.bot_player_next_play(self)
+        self.dealer.makes_moves(self)
+        self.dealer_collects_or_pays_out()
+    
+    def start_next_round(self):
+        self._reset_hand_values()
+        self.place_bets()
+        self.deal_cards()
+    
+    def _reset_hand_values(self):
+        for player in self.seats:
+            player.reset()
+        self.dealer.reset()
