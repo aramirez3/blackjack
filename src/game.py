@@ -23,8 +23,10 @@ class Game():
         self.human_player = player
         return player
         
-    def _create_bot_players(self, bots):
-        if 0 < bots < 5:
+    def _create_bot_players(self, bots = None):
+        if bots is None:
+            bots = randrange(0,4)
+        if bots > 0:
             self.number_of_bots = bots
             bots_list = []
             for i in range(bots):
@@ -32,7 +34,8 @@ class Game():
                 player.name = f"Bot {i + 1}"
                 player.cash_money = randrange(1,9) * 10 * self.minimum_bet
                 bots_list.append(player)
-            self.bot_players.extend(bots_list)
+                self.bot_players.extend(bots_list)
+            print(f"{', '.join(map(lambda x: x.name, bots_list))} have joined your game")
         
     def _create_dealer(self):
         dealer = Dealer()
@@ -43,11 +46,12 @@ class Game():
         reserved_seat = self.human_player.seat_number
         self.seats[reserved_seat] = self.human_player
         bots_remaining = len(self.bot_players)
-        while bots_remaining:
-            seat_number = randrange(0, 5)
-            if seat_number != reserved_seat and self.seats[seat_number] == []:
-                self.seats[seat_number] = self.bot_players[bots_remaining - 1]
-                bots_remaining -= 1
+        if bots_remaining:
+            while bots_remaining:
+                seat_number = randrange(0, 5)
+                if seat_number != reserved_seat and self.seats[seat_number] == []:
+                    self.seats[seat_number] = self.bot_players[bots_remaining - 1]
+                    bots_remaining -= 1
         self._remove_empty_seats()
                 
     def _remove_empty_seats(self):
@@ -61,7 +65,7 @@ class Game():
         self._create_human_player()
         self._create_dealer()
         self.game_start_greeting()
-        self._create_bot_players(self.number_of_bots)
+        self._create_bot_players()
         self._assign_seating()
         self.shuffle_deck()
         self.state.start_game
@@ -84,7 +88,6 @@ class Game():
         
         self._select_seat_number()
         self._player_cash_in()
-        self._select_bot_teammates()
 
     def _select_seat_number(self):
         validation_message = "Please select a seat number from 1-5"
@@ -113,23 +116,6 @@ class Game():
             except ValueError:
                 print(f"Invalid entry. {validation_message}")
         
-    def _select_bot_teammates(self):
-        validation_message = "Please enter a number from 0 to 4"
-        while True:
-            try:
-                number_of_bots = int(input("How many bot players would you like to play with?: "))
-                if number_of_bots >= 0 and number_of_bots <= 4:
-                    if (number_of_bots == 1):
-                        print("OKAY! I see you want to 1v1. Good luck!")
-                    else:
-                        print("Excellent! Good luck, all!")
-                    self.number_of_bots = number_of_bots
-                    break
-                else:
-                    print(validation_message)
-            except ValueError:
-                print(f"Invalid entry. {validation_message}")
-
     def place_bets(self):
         validation_message = f"Minimum bet is {self.minimum_bet} (True count {self.state.true_count})"
         while True:
@@ -228,7 +214,9 @@ class Game():
         for player in self.seats:
             if player.is_active:
                 if player.hand_value == 21:
-                    player.has_blackjack(self)
+                    player.has_blackjack()
+                elif player.soft_hand and player.hand_value + 10 == 21:
+                    player.has_blackjack()
     
     def request_insurance(self):
         while True:
@@ -260,8 +248,9 @@ class Game():
                     player.loses_hand()
         else:
             for player in self.seats:
-                if player.is_active:
-                    player.hand_value += player.current_bet * 2
+                print(f"dealer collecting. dealer {self.dealer.hand_value} v {player.name} {player.hand_value}")
+                # if player.is_active:
+                #     player.hand_value += player.current_bet * 2
                         
     def players_make_moves(self):
         for player in self.seats:

@@ -56,7 +56,7 @@ class Player():
             elif 9 <= self.hand_value <= 11:
                 self.double_down(game)
                 break
-            if self.soft_hand:
+            elif self.soft_hand:
                 if self.hand_value + 10 <= 21:
                     self.take_hard_ace()
             else:
@@ -70,6 +70,7 @@ class Player():
         print(f"{self.name} stays")
     
     def hit(self, game):
+        print(f"{self.name} hits")
         card = game.draw_card(self)
         hand_value_desc = self.hand_value
         if card.rank == Ranks.ACE:
@@ -126,18 +127,21 @@ class Player():
         
     def pushes(self):
         print(f"{self.name} pushes!")
-        self.end_current_turn()
         self.cash_money += self.current_bet
+        self.end_current_turn()
     
     def wins(self):
         print(f"{self.name} wins!")
-        self.end_current_turn()
+        print(f"cash before payout {self.cash_money}")
+        print(f"current bet amount {self.current_bet}")
         self.cash_money += self.current_bet * 2
+        print(f"cash after payout {self.cash_money}")
+        self.end_current_turn()
         
     def has_blackjack(self):
         print(f"{self.name} has blackjack!")
-        self.end_current_turn()
         self.cash_money += (self.current_bet * 3 / 2)
+        self.end_current_turn()
 
     def set_soft_status(self):
         self.soft_hand = True

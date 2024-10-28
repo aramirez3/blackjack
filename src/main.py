@@ -12,7 +12,7 @@ def main():
             game.decide_next_round()
             game.update_game_status()
             game._reset_game_state()
-            print(f"Remaining chips: {game.human_player.cash_money} (press enter to continue)")
+            print(f"Remaining chips: {game.human_player.cash_money}")
             break
         input("Press enter to continue")
     print("game over")
