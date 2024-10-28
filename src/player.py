@@ -35,8 +35,14 @@ class Player():
             self.visible_value = self.hand_value - self.hand[0].value
         self.update_hand_description(game)
         
-    def update_money(self, bet):
-        self.cash_money -= bet
+    def reduce_player_money(self, amount):
+        self.cash_money -= amount
+        
+    def increment_player_money(self, amount):
+        self.cash_money += amount
+        
+    def increment_current_bet(self, amount):
+        self.current_bet += amount
         
     def activate(self, game):
         if self.cash_money > game.minimum_bet:
@@ -69,33 +75,45 @@ class Player():
     def stay(self):
         print(f"{self.name} stays")
     
-    def hit(self, game):
+    def hit(self, game, take_hard_value=False):
         print(f"{self.name} hits")
         card = game.draw_card(self)
         hand_value_desc = self.hand_value
-        if card.rank == Ranks.ACE:
-            if self.soft_hand:
-                hand_value_desc = f"{self.hand_value} or {self.hand_value + 10}"
+        if take_hard_value:
+            self.take_hard_ace()
+        else:
+            if card.rank == Ranks.ACE:
+                if self.soft_hand:
+                    hand_value_desc = f"{self.hand_value} or {self.hand_value + 10}"
         print(f"{self.name} draws {card.rank} ({hand_value_desc})")
     
     def double_down(self, game):
         print(f"{self.name} doubles down")
-        self.hit(game)
-        self.cash_money -= self.current_bet
+        self.hit(game, True)
+        self.reduce_player_money(self.current_bet)
         self.end_current_turn()
+        
+    def split(self, game):
+        print(f"{self.name} splits")
+        print("Implement split play")
     
-    def human_player_next_play(self, game):
+    def get_valid_moves(self, game):
         available_moves = [
             f"h = {self.valid_moves['h']}",
             f"s = {self.valid_moves['s']}",
-            f"dd = {self.valid_moves['dd']}"
         ]
         if len(self.hand) == 2:
             if self.hand[0].rank == self.hand[1].rank:
                 available_moves.append(f"ss = {self.valid_moves['ss']}")
+            if game.state.first_hand:
+                available_moves.append(f"dd = {self.valid_moves['dd']}")
+        return available_moves
+                
+    def human_player_next_play(self, game):
         dealer_shows = f"{game.dealer.visible_hand_description} ({game.dealer.visible_value})"
         print(f"Dealer shows {dealer_shows}. Your hand is {self.hand_description} ({self.hand_value}).")
         while True:
+            available_moves = self.get_valid_moves(game)
             try:
                 move = input(f"Next move? {', '.join(map(lambda x: x, available_moves))}: ")
                 if move in self.valid_moves:
@@ -109,7 +127,8 @@ class Player():
                             self.double_down(game)
                             break
                         case "ss":
-                            print("Split")
+                            self.split(game)
+                            break
                     
                     if self.hand_value > 21:
                         self.breaks()
@@ -127,20 +146,17 @@ class Player():
         
     def pushes(self):
         print(f"{self.name} pushes!")
-        self.cash_money += self.current_bet
+        self.increment_player_money(self.current_bet)
         self.end_current_turn()
     
     def wins(self):
         print(f"{self.name} wins!")
-        print(f"cash before payout {self.cash_money}")
-        print(f"current bet amount {self.current_bet}")
-        self.cash_money += self.current_bet * 2
-        print(f"cash after payout {self.cash_money}")
+        self.increment_player_money(self.current_bet * 2)
         self.end_current_turn()
         
     def has_blackjack(self):
         print(f"{self.name} has blackjack!")
-        self.cash_money += (self.current_bet * 3 / 2)
+        self.increment_player_money(self.current_bet * 3 / 2)
         self.end_current_turn()
 
     def set_soft_status(self):
@@ -152,7 +168,7 @@ class Player():
     
     def pay_insurance_fee(self, game):
         fee = self.current_bet / 2
-        self.cash_money -= fee
+        self.reduce_player_money(fee)
         self.insurance_paid = fee
         
     def reset(self):

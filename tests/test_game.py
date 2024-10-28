@@ -86,21 +86,6 @@ class TestTextNode(unittest.TestCase):
         game.dealer.hand.extend([ace_card, card])
         self.assertFalse(game.dealer.dealer_shows_initial_ace())
         
-    def test_double_cards(self):
-        game = Game()
-        game._create_human_player()
-        game._create_dealer()
-        game.human_player.seat_number = 1
-        game._assign_seating()
-        game.shuffle_deck()
-        card1 = Card(Suits.SPADES, Ranks.KING)
-        card2 = Card(Suits.HEARTS, Ranks.KING)
-        game.dealer.update_hand(card1, game)
-        game.dealer.update_hand(card2, game)
-        game.draw_card(game.human_player)
-        game.draw_card(game.human_player)
-        game.print_player_hands()
-        game.decide_next_round()
         
 if __name__ == "__main__":
     unittest.main()

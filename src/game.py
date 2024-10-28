@@ -43,6 +43,7 @@ class Game():
         self.dealer = dealer
         
     def _assign_seating(self):
+        print("Assigning seats")
         reserved_seat = self.human_player.seat_number
         self.seats[reserved_seat] = self.human_player
         bots_remaining = len(self.bot_players)
@@ -122,16 +123,18 @@ class Game():
             try:
                 current_bet = float(input(f"Place your bet (min: {self.minimum_bet})[true count {self.state.true_count}]: "))
                 if current_bet >= self.minimum_bet:
+                    self.human_player.increment_current_bet(current_bet)
+                    self.human_player.reduce_player_money(current_bet)
                     break
                 else:
                     print(validation_message)
             except ValueError:
                 print(f"Invalid input. {validation_message}")
-        self.human_player.update_money(current_bet)
         print(f"Your bet is {current_bet} ({self.human_player.cash_money} remaining)")
         for player in self.bot_players:
             if player.is_active:
-                player.update_money(self.minimum_bet)
+                player.reduce_player_money(self.minimum_bet)
+                player.increment_current_bet(current_bet)
         print("All bets have been placed")
     
     def deal_cards(self):
@@ -206,7 +209,7 @@ class Game():
             for player in self.seats:
                 if player.is_active:
                     if player.insurance_paid > 0:
-                        player.cash_money += player.insurance_paid * 2
+                        player.increment_player_money(player.insurance_paid * 2)
                     else:
                         player.loses_hand()
             print("reset the hand state")
