@@ -252,4 +252,4 @@ class Game():
                     if player == self.human_player:
                         player.human_player_next_play(self)
                     else:
-                        player.play_basic_strategy(self)
+                        player.bot_player_next_play(self)
